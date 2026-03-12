@@ -20,7 +20,6 @@ class MainActivity : ComponentActivity() {
             JokerMemoryFlipTheme {
                 val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // Wrapping NavGraph in a box or applying padding to the NavGraph
                     androidx.compose.foundation.layout.Box(
                         modifier = Modifier.padding(innerPadding).fillMaxSize()
                     ) {
