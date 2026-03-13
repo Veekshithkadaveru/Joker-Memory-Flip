@@ -32,7 +32,23 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
         composable(Screen.ModeSelect.route) { backStackEntry ->
-            val gameMode = backStackEntry.arguments?.getString("gameMode") ?: "VS_AI"
+            val gameModeStr = backStackEntry.arguments?.getString("gameMode") ?: "VS_AI"
+            val gameMode = try {
+                app.krafted.jokermemoryflip.game.GameMode.valueOf(gameModeStr)
+            } catch (e: Exception) {
+                app.krafted.jokermemoryflip.game.GameMode.VS_AI
+            }
+
+            app.krafted.jokermemoryflip.ui.screens.ModeSelectScreen(
+                gameMode = gameMode,
+                onStartVsAi = { difficulty ->
+                    navController.navigate(Screen.GameBoard.route)
+                },
+                onStartVsPlayer = { p1, p2 ->
+                    navController.navigate(Screen.GameBoard.route)
+                },
+                onBackClick = { navController.popBackStack() }
+            )
         }
         composable(Screen.GameBoard.route) {
         }

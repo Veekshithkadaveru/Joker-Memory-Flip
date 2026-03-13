@@ -19,10 +19,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             JokerMemoryFlipTheme {
-                val navController = rememberNavController()
-                androidx.compose.foundation.layout.Box(
-                    modifier = Modifier.fillMaxSize()
+                androidx.compose.material3.Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.background
                 ) {
+                    val navController = rememberNavController()
                     AppNavGraph(navController = navController)
                 }
             }
