@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ModeSelectScreen(
     gameMode: GameMode,
-    onStartVsAi: (Difficulty) -> Unit,
+    onStartVsAi: (String, Difficulty) -> Unit,
     onStartVsPlayer: (String, String) -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -172,8 +172,11 @@ fun ModeSelectScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AiSelectionContent(onStartVsAi: (Difficulty) -> Unit) {
+private fun AiSelectionContent(onStartVsAi: (String, Difficulty) -> Unit) {
+    var playerName by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -197,14 +200,21 @@ private fun AiSelectionContent(onStartVsAi: (Difficulty) -> Unit) {
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        PlayerTextField(
+            value = playerName,
+            onValueChange = { if (it.length <= 12) playerName = it },
+            label = "Your Name",
+            icon = R.drawable.card_heart
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
 
         DifficultyCard(
             title = "FORGETFUL",
             description = "Remembers nothing. Pure chaos.",
             icon = R.drawable.card_club,
             containerBrush = Brush.horizontalGradient(listOf(RichPurple.copy(alpha = 0.8f), DeepPurple.copy(alpha = 0.9f))),
-            onClick = { onStartVsAi(Difficulty.FORGETFUL) }
+            onClick = { onStartVsAi(playerName.ifBlank { "Player" }, Difficulty.FORGETFUL) }
         )
 
         DifficultyCard(
@@ -212,7 +222,7 @@ private fun AiSelectionContent(onStartVsAi: (Difficulty) -> Unit) {
             description = "Remembers the last 4 cards.",
             icon = R.drawable.card_spade,
             containerBrush = Brush.horizontalGradient(listOf(DeepPurple.copy(alpha = 0.9f), CardSurface.copy(alpha = 0.8f))),
-            onClick = { onStartVsAi(Difficulty.AVERAGE) }
+            onClick = { onStartVsAi(playerName.ifBlank { "Player" }, Difficulty.AVERAGE) }
         )
 
         DifficultyCard(
@@ -220,7 +230,7 @@ private fun AiSelectionContent(onStartVsAi: (Difficulty) -> Unit) {
             description = "Remembers everything. Good luck.",
             icon = R.drawable.card_diamond,
             containerBrush = Brush.horizontalGradient(listOf(CardSurface.copy(alpha = 0.8f), MidPurple.copy(alpha = 0.8f))),
-            onClick = { onStartVsAi(Difficulty.PHOTOGRAPHIC) }
+            onClick = { onStartVsAi(playerName.ifBlank { "Player" }, Difficulty.PHOTOGRAPHIC) }
         )
     }
 }

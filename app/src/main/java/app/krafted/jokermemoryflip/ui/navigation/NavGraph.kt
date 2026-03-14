@@ -1,28 +1,12 @@
 package app.krafted.jokermemoryflip.ui.navigation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import app.krafted.jokermemoryflip.data.AppDatabase
-import app.krafted.jokermemoryflip.game.CardSymbol
 import app.krafted.jokermemoryflip.game.Difficulty
 import app.krafted.jokermemoryflip.game.GameMode
 import app.krafted.jokermemoryflip.game.Player
@@ -30,11 +14,10 @@ import app.krafted.jokermemoryflip.ui.screens.GameBoardScreen
 import app.krafted.jokermemoryflip.ui.screens.HomeScreen
 import app.krafted.jokermemoryflip.ui.screens.LeaderboardScreen
 import app.krafted.jokermemoryflip.ui.screens.ModeSelectScreen
+import app.krafted.jokermemoryflip.ui.screens.ResultScreen
 import app.krafted.jokermemoryflip.ui.screens.StealScreen
-import app.krafted.jokermemoryflip.ui.theme.*
 import app.krafted.jokermemoryflip.viewmodel.GameViewModel
 import app.krafted.jokermemoryflip.viewmodel.LeaderboardViewModel
-import app.krafted.jokermemoryflip.viewmodel.MatchResult
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -89,8 +72,8 @@ fun AppNavGraph(navController: NavHostController) {
 
             ModeSelectScreen(
                 gameMode = gameMode,
-                onStartVsAi = { difficulty ->
-                    gameViewModel.startGame(GameMode.VS_AI, difficulty, "Player", "")
+                onStartVsAi = { name, difficulty ->
+                    gameViewModel.startGame(GameMode.VS_AI, difficulty, name, "")
                     navController.navigate(Screen.GameBoard.route)
                 },
                 onStartVsPlayer = { p1, p2 ->
@@ -143,11 +126,9 @@ fun AppNavGraph(navController: NavHostController) {
         // ── Result ────────────────────────────────────────────────────────────
         composable(Screen.Result.route) {
             val uiState by gameViewModel.uiState.collectAsState()
-            val winner = uiState.matchResult as? MatchResult.Winner
 
-            ResultScreenPlaceholder(
-                winnerName = winner?.playerName ?: "Player",
-                winnerPairs = winner?.pairs ?: 0,
+            ResultScreen(
+                uiState = uiState,
                 onPlayAgain = {
                     gameViewModel.resetGame()
                     navController.navigate(Screen.GameBoard.route) {
@@ -172,97 +153,4 @@ fun AppNavGraph(navController: NavHostController) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Private placeholder composables
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-private fun ResultScreenPlaceholder(
-    winnerName: String,
-    winnerPairs: Int,
-    onPlayAgain: () -> Unit,
-    onHome: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkPurple),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-            modifier = Modifier.padding(horizontal = 32.dp)
-        ) {
-            Text(
-                text = "WINNER!",
-                color = GoldAccent,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 4.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = winnerName,
-                color = GoldLight,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = "$winnerPairs pairs collected",
-                color = Color.White.copy(alpha = 0.8f),
-                fontSize = 18.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Play Again button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(Brush.horizontalGradient(listOf(GoldDark, GoldAccent, GoldDark)))
-                    .clickable { onPlayAgain() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "PLAY AGAIN",
-                    color = DarkPurple,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp
-                )
-            }
-
-            // Home button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .border(
-                        width = 2.dp,
-                        brush = Brush.horizontalGradient(listOf(GoldDark, GoldAccent, GoldDark)),
-                        shape = RoundedCornerShape(28.dp)
-                    )
-                    .background(Color.Transparent)
-                    .clickable { onHome() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "HOME",
-                    color = GoldAccent,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp
-                )
-            }
-        }
-    }
-}
 
