@@ -4,12 +4,12 @@ import app.krafted.jokermemoryflip.R
 
 enum class CardSymbol(val displayName: String, val drawableRes: Int) {
     JOKER("The Joker", R.drawable.card_joker),
-    DIAMOND("Diamond", R.drawable.card_diamond),
-    SPADE("Spade", R.drawable.card_spade),
-    HEART("Heart", R.drawable.card_heart),
-    CLUB("Club", R.drawable.card_club),
-    CROWN("Crown", R.drawable.card_crown),
-    STAR("Star", R.drawable.card_star)
+    DIAMOND("Strawberry", R.drawable.card_diamond),
+    SPADE("Lemon", R.drawable.card_spade),
+    HEART("Crown", R.drawable.card_heart),
+    CLUB("Horseshoe", R.drawable.card_club),
+    CROWN("Diamond", R.drawable.card_crown),
+    STAR("Heart", R.drawable.card_star)
 }
 
 data class CardState(

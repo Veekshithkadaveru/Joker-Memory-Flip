@@ -25,6 +25,7 @@ data class GameUiState(
     val turnPhase: TurnPhase = TurnPhase.SELECTING,
     val jokerStealPending: Boolean = false,
     val stealingPlayer: Player? = null,
+    val deferredStealer: Player? = null,   // Joker steal banked — fires on opponent's next pair
     val matchResult: MatchResult? = null,
     val gameMode: GameMode = GameMode.VS_AI,
     val aiDifficulty: Difficulty = Difficulty.AVERAGE,
@@ -130,10 +131,36 @@ class GameViewModel(private val matchDao: MatchDao) : ViewModel() {
             )
         }
 
+        // ── Deferred steal: fires when the victim finally collects their first pair ──
+        if (state.deferredStealer != null && state.deferredStealer != player) {
+            val deferred = state.deferredStealer
+            _uiState.update {
+                it.copy(
+                    turnPhase = TurnPhase.STEAL_PENDING,
+                    jokerStealPending = true,
+                    stealingPlayer = deferred,
+                    deferredStealer = null
+                )
+            }
+            if (state.gameMode == GameMode.VS_AI && deferred == Player.TWO) {
+                viewModelScope.launch {
+                    delay(GameConstants.AI_THINK_MIN_MS)
+                    val opponentPairs = updatedPairs[player] ?: emptyList()
+                    if (opponentPairs.isNotEmpty()) {
+                        val target = aiOpponent?.chooseStealTarget(opponentPairs) ?: opponentPairs.random()
+                        executeSteal(target)
+                    }
+                }
+            }
+            return
+        }
+
+        // ── Joker pair matched: immediate steal or bank for later ────────────
         if (symbol == CardSymbol.JOKER) {
             val opponent = if (player == Player.ONE) Player.TWO else Player.ONE
             val opponentPairs = updatedPairs[opponent] ?: emptyList()
             if (opponentPairs.isNotEmpty()) {
+                // Opponent already has pairs — steal now
                 _uiState.update {
                     it.copy(
                         turnPhase = TurnPhase.STEAL_PENDING,
@@ -141,7 +168,6 @@ class GameViewModel(private val matchDao: MatchDao) : ViewModel() {
                         stealingPlayer = player
                     )
                 }
-                // If AI is stealing, auto-select
                 if (state.gameMode == GameMode.VS_AI && player == Player.TWO) {
                     viewModelScope.launch {
                         delay(GameConstants.AI_THINK_MIN_MS)
@@ -150,6 +176,9 @@ class GameViewModel(private val matchDao: MatchDao) : ViewModel() {
                     }
                 }
                 return
+            } else {
+                // Opponent has 0 pairs — bank the steal for when they collect one
+                _uiState.update { it.copy(deferredStealer = player) }
             }
         }
 

@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,6 +30,7 @@ import app.krafted.jokermemoryflip.ui.screens.GameBoardScreen
 import app.krafted.jokermemoryflip.ui.screens.HomeScreen
 import app.krafted.jokermemoryflip.ui.screens.LeaderboardScreen
 import app.krafted.jokermemoryflip.ui.screens.ModeSelectScreen
+import app.krafted.jokermemoryflip.ui.screens.StealScreen
 import app.krafted.jokermemoryflip.ui.theme.*
 import app.krafted.jokermemoryflip.viewmodel.GameViewModel
 import app.krafted.jokermemoryflip.viewmodel.LeaderboardViewModel
@@ -121,19 +120,22 @@ fun AppNavGraph(navController: NavHostController) {
 
         // ── Steal ─────────────────────────────────────────────────────────────
         composable(Screen.Steal.route) {
-            val uiState by gameViewModel.uiState.collectAsState()
-            val stealingPlayer = uiState.stealingPlayer
-            val victimPlayer = if (stealingPlayer == Player.ONE) Player.TWO else Player.ONE
-            val victimPairs = uiState.collectedPairs[victimPlayer] ?: emptyList()
+            // Snapshot steal data once on entry — prevents flash when executeSteal()
+            // clears stealingPlayer/jokerStealPending before the pop completes.
+            val uiState = gameViewModel.uiState.collectAsState().value
+            val stealingPlayer = remember { uiState.stealingPlayer }
+            val victimPlayer   = remember { if (stealingPlayer == Player.ONE) Player.TWO else Player.ONE }
+            val victimPairs    = remember { uiState.collectedPairs[victimPlayer] ?: emptyList() }
+            val stealingName   = remember { if (stealingPlayer == Player.ONE) uiState.player1Name else uiState.player2Name }
+            val victimName     = remember { if (victimPlayer   == Player.ONE) uiState.player1Name else uiState.player2Name }
 
-            StealScreenPlaceholder(
-                victimPairs = victimPairs,
-                onSymbolChosen = { symbol ->
+            StealScreen(
+                stealingPlayerName = stealingName,
+                victimPlayerName   = victimName,
+                victimPairs        = victimPairs,
+                onSymbolChosen     = { symbol ->
+                    navController.popBackStack()
                     gameViewModel.executeSteal(symbol)
-                    navController.popBackStack()
-                },
-                onBack = {
-                    navController.popBackStack()
                 }
             )
         }
@@ -264,104 +266,3 @@ private fun ResultScreenPlaceholder(
     }
 }
 
-@Composable
-private fun StealScreenPlaceholder(
-    victimPairs: List<CardSymbol>,
-    onSymbolChosen: (CardSymbol) -> Unit,
-    onBack: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xEE0D0518)),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp)
-        ) {
-            Text(
-                text = "JOKER STEAL!",
-                color = GoldAccent,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 4.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = "Choose a pair to steal",
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            if (victimPairs.isEmpty()) {
-                Text(
-                    text = "No pairs to steal!",
-                    color = Color.White.copy(alpha = 0.5f),
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center
-                )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    itemsIndexed(victimPairs) { _, symbol ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(CardSurface)
-                                .border(
-                                    width = 1.dp,
-                                    color = GoldAccent.copy(alpha = 0.6f),
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .clickable { onSymbolChosen(symbol) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = symbol.displayName,
-                                color = GoldLight,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .border(
-                        width = 1.dp,
-                        color = Color.White.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .clickable { onBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "BACK",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-    }
-}
