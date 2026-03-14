@@ -107,6 +107,12 @@ fun AppNavGraph(navController: NavHostController) {
             // clears stealingPlayer/jokerStealPending before the pop completes.
             val uiState = gameViewModel.uiState.collectAsState().value
             val stealingPlayer = remember { uiState.stealingPlayer }
+
+            if (stealingPlayer == null) {
+                navController.popBackStack()
+                return@composable
+            }
+
             val victimPlayer   = remember { if (stealingPlayer == Player.ONE) Player.TWO else Player.ONE }
             val victimPairs    = remember { uiState.collectedPairs[victimPlayer] ?: emptyList() }
             val stealingName   = remember { if (stealingPlayer == Player.ONE) uiState.player1Name else uiState.player2Name }

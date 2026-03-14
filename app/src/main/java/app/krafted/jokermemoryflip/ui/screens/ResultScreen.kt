@@ -50,7 +50,9 @@ fun ResultScreen(
     onPlayAgain: () -> Unit,
     onHome: () -> Unit
 ) {
-    val winner = uiState.matchResult as? MatchResult.Winner ?: return
+    val matchResult = uiState.matchResult ?: return
+    val winner = matchResult as? MatchResult.Winner
+    val draw = matchResult as? MatchResult.Draw
     val p1Pairs = uiState.collectedPairs[Player.ONE] ?: emptyList()
     val p2Pairs = uiState.collectedPairs[Player.TWO] ?: emptyList()
 
@@ -126,43 +128,73 @@ fun ResultScreen(
                 ResultGoldDivider()
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "WINNER",
-                    color = GoldAccent,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 6.sp
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = winner.playerName,
-                    style = TextStyle(
-                        brush = Brush.verticalGradient(listOf(GoldLight, GoldAccent, GoldDark)),
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp,
-                        shadow = Shadow(
-                            color = GoldAccent.copy(alpha = 0.45f),
-                            offset = Offset(0f, 6f),
-                            blurRadius = 12f
-                        )
-                    ),
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(3.dp))
-
-                Text(
-                    text = "with ${winner.pairs} pairs collected",
-                    color = GoldLight.copy(alpha = 0.55f),
-                    fontSize = 12.sp,
-                    fontStyle = FontStyle.Italic,
-                    letterSpacing = 0.5.sp
-                )
+                if (draw != null) {
+                    Text(
+                        text = "IT'S A DRAW",
+                        color = GoldAccent,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 6.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${draw.pairs} PAIRS EACH",
+                        style = TextStyle(
+                            brush = Brush.verticalGradient(listOf(GoldLight, GoldAccent, GoldDark)),
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp,
+                            shadow = Shadow(
+                                color = GoldAccent.copy(alpha = 0.45f),
+                                offset = Offset(0f, 6f),
+                                blurRadius = 12f
+                            )
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "nobody escapes the joker",
+                        color = GoldLight.copy(alpha = 0.55f),
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        letterSpacing = 0.5.sp
+                    )
+                } else if (winner != null) {
+                    Text(
+                        text = "WINNER",
+                        color = GoldAccent,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 6.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = winner.playerName,
+                        style = TextStyle(
+                            brush = Brush.verticalGradient(listOf(GoldLight, GoldAccent, GoldDark)),
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp,
+                            shadow = Shadow(
+                                color = GoldAccent.copy(alpha = 0.45f),
+                                offset = Offset(0f, 6f),
+                                blurRadius = 12f
+                            )
+                        ),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "with ${winner.pairs} pairs collected",
+                        color = GoldLight.copy(alpha = 0.55f),
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic,
+                        letterSpacing = 0.5.sp
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
                 ResultGoldDivider()
@@ -184,13 +216,13 @@ fun ResultScreen(
                 PlayerTallyCard(
                     playerName = uiState.player1Name,
                     pairs = p1Pairs,
-                    isWinner = winner.player == Player.ONE,
+                    isWinner = winner?.player == Player.ONE,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
                 PlayerTallyCard(
                     playerName = uiState.player2Name,
                     pairs = p2Pairs,
-                    isWinner = winner.player == Player.TWO,
+                    isWinner = winner?.player == Player.TWO,
                     modifier = Modifier.weight(1f).fillMaxHeight()
                 )
             }

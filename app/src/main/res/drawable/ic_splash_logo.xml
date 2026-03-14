@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <size
+                android:width="240dp"
+                android:height="240dp" />
+            <gradient
+                android:angle="270"
+                android:startColor="#3A205E"
+                android:centerColor="#241239"
+                android:endColor="#140A22" />
+            <stroke
+                android:width="2dp"
+                android:color="#D8B35D" />
+        </shape>
+    </item>
+
+    <item
+        android:left="28dp"
+        android:top="28dp"
+        android:right="28dp"
+        android:bottom="28dp">
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/card_joker_icon" />
+    </item>
+</layer-list>

@@ -39,6 +39,7 @@ data class GameUiState(
 
 sealed class MatchResult {
     data class Winner(val player: Player, val playerName: String, val pairs: Int) : MatchResult()
+    data class Draw(val pairs: Int) : MatchResult()
 }
 
 class GameViewModel(private val matchDao: MatchDao) : ViewModel() {
@@ -218,23 +219,36 @@ class GameViewModel(private val matchDao: MatchDao) : ViewModel() {
         if (totalCollected >= GameConstants.TOTAL_CARDS) {
             val p1Pairs = (state.collectedPairs[Player.ONE] ?: emptyList()).size
             val p2Pairs = (state.collectedPairs[Player.TWO] ?: emptyList()).size
-            val winner = if (p1Pairs >= p2Pairs) Player.ONE else Player.TWO
-            val winnerName = if (winner == Player.ONE) state.player1Name else state.player2Name
-            val winnerPairs = maxOf(p1Pairs, p2Pairs)
+            val isDraw = p1Pairs == p2Pairs
+            val result: MatchResult
+            val dbWinnerName: String
+            val dbLoserName: String
+
+            if (isDraw) {
+                result = MatchResult.Draw(p1Pairs)
+                dbWinnerName = "DRAW"
+                dbLoserName = "${state.player1Name} vs ${state.player2Name}"
+            } else {
+                val winner = if (p1Pairs > p2Pairs) Player.ONE else Player.TWO
+                val winnerName = if (winner == Player.ONE) state.player1Name else state.player2Name
+                result = MatchResult.Winner(winner, winnerName, maxOf(p1Pairs, p2Pairs))
+                dbWinnerName = winnerName
+                dbLoserName = if (winner == Player.ONE) state.player2Name else state.player1Name
+            }
 
             _uiState.update {
                 it.copy(
                     turnPhase = TurnPhase.GAME_OVER,
                     isGameOver = true,
-                    matchResult = MatchResult.Winner(winner, winnerName, winnerPairs)
+                    matchResult = result
                 )
             }
 
             viewModelScope.launch {
                 matchDao.insertMatch(
                     MatchRecord(
-                        winnerName = winnerName,
-                        loserName = if (winner == Player.ONE) state.player2Name else state.player1Name,
+                        winnerName = dbWinnerName,
+                        loserName = dbLoserName,
                         winnerPairs = maxOf(p1Pairs, p2Pairs),
                         loserPairs = minOf(p1Pairs, p2Pairs),
                         gameMode = state.gameMode.name,
@@ -299,6 +313,8 @@ class GameViewModel(private val matchDao: MatchDao) : ViewModel() {
 
     private fun triggerAiTurn() {
         val ai = aiOpponent ?: return
+        val currentState = _uiState.value
+        if (currentState.isGameOver || currentState.turnPhase == TurnPhase.GAME_OVER) return
         viewModelScope.launch {
             val thinkTime = (GameConstants.AI_THINK_MIN_MS..GameConstants.AI_THINK_MAX_MS).random()
             delay(thinkTime)

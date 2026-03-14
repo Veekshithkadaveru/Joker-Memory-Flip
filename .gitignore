@@ -25,3 +25,5 @@ Jok_012_N_elem
 .idea/runConfigurations.xml
 .idea/vcs.xml
 .idea/misc.xml
+app/release/
+app/schemas/

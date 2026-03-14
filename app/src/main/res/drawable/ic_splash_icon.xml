@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:name="star_group"
+        android:pivotX="54"
+        android:pivotY="54">
+        <!-- 5-pointed gold star, center (54,54), outer r=38, inner r=16 -->
+        <path
+            android:fillColor="#FFD700"
+            android:pathData="M54,16 L63.40,41.06 L90.14,42.26 L69.22,58.94 L76.34,84.74 L54,70 L31.66,84.74 L38.78,58.94 L17.86,42.26 L44.60,41.06 Z" />
+    </group>
+
+    <!-- Dark center dot for depth -->
+    <path
+        android:fillColor="#0D0518"
+        android:pathData="M54,46 A8,8 0 1,1 53.999,46 Z" />
+
+</vector>

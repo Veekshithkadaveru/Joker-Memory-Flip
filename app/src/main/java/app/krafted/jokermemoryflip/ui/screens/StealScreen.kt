@@ -220,6 +220,39 @@ fun StealScreen(
                         )
                     }
                 }
+            } else {
+                // No pairs to steal — show a dismiss button so the screen is not a dead-end
+                Spacer(Modifier.weight(1f))
+                val continueShape = RoundedCornerShape(24.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .graphicsLayer { translationY = cardsOffsetY.value }
+                        .clip(continueShape)
+                        .background(
+                            Brush.horizontalGradient(listOf(GoldDark, GoldAccent, GoldDark))
+                        )
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            enabled = !stolen
+                        ) {
+                            if (!stolen) {
+                                stolen = true
+                                onSymbolChosen(CardSymbol.JOKER)
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "CONTINUE",
+                        color = DarkPurple,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                }
             }
 
             Spacer(Modifier.height(8.dp))

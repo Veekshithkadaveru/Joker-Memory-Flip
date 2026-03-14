@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.JokerMemoryFlip" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.JokerMemoryFlip.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.JokerMemoryFlip</item>
+    </style>
+
 </resources>

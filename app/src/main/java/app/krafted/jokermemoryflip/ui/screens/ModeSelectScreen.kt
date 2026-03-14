@@ -287,7 +287,7 @@ private fun PlayerInputContent(onStartVsPlayer: (String, String) -> Unit) {
 
         StartButton(
             onClick = { onStartVsPlayer(p1Name, p2Name) },
-            enabled = true,
+            enabled = isReady,
             modifier = Modifier.padding(bottom = 32.dp)
         )
     }
@@ -426,7 +426,7 @@ private fun StartButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val pressScale = if (isPressed) 0.95f else 1f
+    val pressScale = if (isPressed && enabled) 0.95f else 1f
     val shape = RoundedCornerShape(24.dp)
 
     Box(
@@ -436,6 +436,7 @@ private fun StartButton(
             .graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
+                alpha = if (enabled) 1f else 0.5f
             }
             .shadow(
                 elevation = 8.dp,
